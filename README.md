@@ -1,5 +1,6 @@
 # Golang object parameter verifier
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/ormissia/go-opv.svg)](https://pkg.go.dev/github.com/ormissia/go-opv)
 ![Repository Size](https://img.shields.io/github/repo-size/ormissia/go-opv)
 ![Contributor](https://img.shields.io/github/contributors/ormissia/go-opv)
 ![Last Commit](https://img.shields.io/github/last-commit/ormissia/go-opv)
