@@ -11,14 +11,14 @@ type User struct {
 
 func init() {
 	myVerifier = NewVerifier(SetSeparator("#"))
-	UserRequestRules = Rules{
+	userRequestRules = Rules{
 		"Name": {myVerifier.NotEmpty(), myVerifier.Lt("10")},
 		"Age":  {myVerifier.Lt("100")},
 	}
 }
 
 var myVerifier Verifier
-var UserRequestRules Rules
+var userRequestRules Rules
 
 func ExampleVerifier_Verify() {
 	// ShouldBind(&user) in Gin framework or other generated object
@@ -26,7 +26,7 @@ func ExampleVerifier_Verify() {
 		Name: "Ormissia",
 		Age:  90,
 	}
-	if err := myVerifier.Verify(user, UserRequestRules); err != nil {
+	if err := myVerifier.Verify(user, userRequestRules); err != nil {
 		log.Fatal(err)
 	}
 }
