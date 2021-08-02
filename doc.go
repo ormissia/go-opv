@@ -3,7 +3,7 @@
 // license that can be found in the LICENSE file.
 
 /*
-	Package go_opv implements verify go object parameter using customer rules.
+	Package go_opv implements verify go object parameter using custom rules.
 
 	Allow rules:
 		eq : ==
@@ -14,28 +14,31 @@
 		le : <=
 
 	Example:
-		var verifier = go_opv.NewVerifier()
-
-		var aaa = go_opv.Rules{
-			"Name": {go_opv.NotEmpty(), go_opv.Lt("20")},
-			"Age":  {go_opv.Lt("100")},
-		}
-
 		type User struct {
 			Name string
 			Age  int
 		}
 
-		func Example() {
+		func init() {
+			myVerifier = NewVerifier(SetSeparator("#"))
+			UserRequestRules = Rules{
+				"Name": {myVerifier.NotEmpty(), myVerifier.Lt("10")},
+				"Age":  {myVerifier.Lt("100")},
+			}
+		}
+
+		var myVerifier Verifier
+		var UserRequestRules Rules
+
+		func ExampleVerifier_Verify() {
 			// ShouldBind(&user) in Gin framework or other generated object
 			user := User{
 				Name: "Ormissia",
 				Age:  90,
 			}
-			if err := verifier.Verify(user, aaa); err != nil {
+			if err := myVerifier.Verify(user, UserRequestRules); err != nil {
 				log.Fatal(err)
 			}
 		}
-
 */
 package go_opv
