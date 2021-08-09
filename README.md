@@ -10,6 +10,15 @@
 
 > Golang 对象参数验证器
 
+引用
+```bash
+go get github.com/ormissia/go-opv
+```
+
+```go
+import "go_opv"
+```
+
 ## TODO
 - ~~写example~~
 - 增加中文长度判断支持
@@ -17,6 +26,53 @@
 - 增加`map`验证器
 - 增加`tag`标记模式
 - 增加通过函数参数的方式，实现自定义规则校验
+
+---
+
+使用示例
+
+```go
+package main
+
+import (
+	"github.com/ormissia/go-opv"
+	"log"
+)
+
+type User struct {
+	Name string
+	Age  int
+}
+
+func init() {
+	myVerifier = go_opv.NewVerifier(go_opv.SetSeparator("#"))
+	userRequestRules = go_opv.Rules{
+		"Name": {myVerifier.NotEmpty(), myVerifier.Lt("10")},
+		"Age":  {myVerifier.Lt("100")},
+	}
+}
+
+var myVerifier go_opv.Verifier
+var userRequestRules go_opv.Rules
+
+func main() {
+	// ShouldBind(&user) in Gin framework or other generated object
+	user := User{
+		Name: "Ormissia",
+		Age:  900,
+	}
+	if err := myVerifier.Verify(user, userRequestRules); err != nil {
+		log.Fatal(err)
+	}
+}
+```
+
+```bash
+2021/08/09 16:57:36 Age length or value is illegal,lt#100
+```
+
+由于当前校验对象`Age`值为900，不符合规则，故`err`值返回错误信息
+
 
 ---
 
