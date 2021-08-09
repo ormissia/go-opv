@@ -110,4 +110,4 @@ type User struct {
 
 ## 灵感来源
 - [gin-vue-admin中实体参数校验方式](https://github.com/flipped-aurora/gin-vue-admin/blob/186ecbf6b8bd5d2ce2b4856de2f0265846483a50/server/utils/validator.go#L107)
-- [函数选项模式](https://ormissia.github.io/posts/knowledge/2021-07-22/)
+- [函数选项模式](https://ormissia.github.io/posts/knowledge/2001-go-partten-1/)
