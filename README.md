@@ -46,7 +46,9 @@ type User struct {
 }
 
 func init() {
+	//初始化验证器并将分隔符设为'#'
 	myVerifier = go_opv.NewVerifier(go_opv.SetSeparator("#"))
+	//初始化一个验证规则：Name字段长度小于10，Age字段小于100
 	userRequestRules = go_opv.Rules{
 		"Name": {myVerifier.NotEmpty(), myVerifier.Lt("10")},
 		"Age":  {myVerifier.Lt("100")},
