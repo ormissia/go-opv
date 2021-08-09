@@ -10,7 +10,8 @@
 
 > Golang 对象参数验证器
 
-引用
+引用方式
+
 ```bash
 go get github.com/ormissia/go-opv
 ```
