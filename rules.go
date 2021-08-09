@@ -9,10 +9,6 @@ import "fmt"
 // Rules define
 type Rules map[string][]string
 
-func (verifier verifier) NotEmpty() string {
-	return "notEmpty"
-}
-
 // Eq ==
 func (verifier verifier) Eq(limit string) string {
 	return fmt.Sprintf("%s%s%s", eq, verifier.separator, limit)

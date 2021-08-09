@@ -6,11 +6,13 @@ package go_opv
 
 import (
 	"errors"
+	"fmt"
 	"reflect"
 	"strings"
 )
 
 var defaultVerifierOptions = verifierOptions{
+	tagPrefix: "go-opv",
 	separator: ":",
 	conditions: map[string]bool{
 		eq: true,
@@ -24,8 +26,16 @@ var defaultVerifierOptions = verifierOptions{
 
 type VerifierOption func(o *verifierOptions)
 type verifierOptions struct {
-	conditions map[string]bool
+	tagPrefix  string
 	separator  string
+	conditions map[string]bool
+}
+
+// SetTagPrefix Default separator is "go-opv".
+func SetTagPrefix(seq string) VerifierOption {
+	return func(o *verifierOptions) {
+		o.separator = seq
+	}
 }
 
 // SetSeparator Default separator is ":".
@@ -72,9 +82,8 @@ func SwitchLe(sw bool) VerifierOption {
 }
 
 type Verifier interface {
-	Verify(obj interface{}, rules Rules) (err error)
+	Verify(obj interface{}, rules ...Rules) (err error)
 
-	NotEmpty() string
 	Ne(limit string) string
 	Gt(limit string) string
 	Lt(limit string) string
@@ -83,6 +92,7 @@ type Verifier interface {
 }
 
 type verifier struct {
+	tagPrefix  string
 	separator  string
 	conditions map[string]bool
 }
@@ -93,14 +103,22 @@ func NewVerifier(opts ...VerifierOption) Verifier {
 		opt(&options)
 	}
 	return verifier{
+		tagPrefix:  options.tagPrefix,
 		separator:  options.separator,
 		conditions: options.conditions,
 	}
 }
 
-func (verifier verifier) Verify(st interface{}, rules Rules) (err error) {
+func (verifier verifier) Verify(st interface{}, rules ...Rules) (err error) {
 	typ := reflect.TypeOf(st)
 	val := reflect.ValueOf(st)
+
+	var conditions Rules
+	if len(rules) > 0 {
+		conditions = rules[0]
+	} else {
+		conditions = Rules{}
+	}
 
 	if val.Kind() != reflect.Struct {
 		return errors.New("expect struct")
@@ -109,19 +127,30 @@ func (verifier verifier) Verify(st interface{}, rules Rules) (err error) {
 	//遍历需要验证对象的所有字段
 	for i := 0; i < num; i++ {
 		tagVal := typ.Field(i)
-		val := val.Field(i)
-		if len(rules[tagVal.Name]) > 0 {
-			for _, v := range rules[tagVal.Name] {
-				switch {
-				case v == "notEmpty":
-					if isEmpty(val) {
-						return errors.New(tagVal.Name + " value can not be nil")
-					}
-				case verifier.conditions[strings.Split(v, verifier.separator)[0]]:
-					if !compareVerify(val, v, verifier.separator) {
-						return errors.New(tagVal.Name + " length or value is illegal," + v)
-					}
+		field := val.Field(i)
+
+		if len(conditions[tagVal.Name]) == 0 {
+			//没有自定义使用tag
+			//`go-opv:"ne:0,eq:10"`
+			//conditionsStr = "ne:0,eq:10"
+			if conditionsStr, ok := tagVal.Tag.Lookup(verifier.tagPrefix); ok && conditionsStr != "" {
+				conditionStrs := strings.Split(conditionsStr, ",")
+				conditions[tagVal.Name] = conditionStrs
+			} else {
+				//如果tag也没有定义则去校验下一个字段
+				continue
+			}
+		}
+
+		for _, v := range conditions[tagVal.Name] {
+			switch {
+			case verifier.conditions[strings.Split(v, verifier.separator)[0]]:
+				if !compareVerify(field, v, verifier.separator) {
+					return errors.New(fmt.Sprintf("%s length or value is illegal: %s", tagVal.Name, v))
 				}
+			default:
+				condition := strings.Split(v, verifier.separator)[0]
+				return errors.New(fmt.Sprintf("Unsupported condition: %s", condition))
 			}
 		}
 	}
