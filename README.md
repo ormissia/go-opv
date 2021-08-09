@@ -17,18 +17,8 @@ go get github.com/ormissia/go-opv
 ```
 
 ```go
-import "go_opv"
+import "github.com/ormissia/go-opv"
 ```
-
-## TODO
-- ~~写example~~
-- 增加中文长度判断支持
-- 写测试用例
-- 增加`map`验证器
-- 增加`tag`标记模式
-- 增加通过函数参数的方式，实现自定义规则校验
-
----
 
 使用示例
 
@@ -76,6 +66,15 @@ func main() {
 
 由于当前校验对象`Age`值为900，不符合规则，故`err`值返回错误信息
 
+---
+
+## TODO
+- ~~写example~~
+- 增加中文长度判断支持
+- 写测试用例
+- 增加`map`验证器
+- 增加`tag`标记模式
+- 增加通过函数参数的方式，实现自定义规则校验
 
 ---
 
