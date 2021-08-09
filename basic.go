@@ -12,8 +12,8 @@ import (
 )
 
 var defaultVerifierOptions = verifierOptions{
-	tagPrefix: "go-opv",
-	separator: ":",
+	tagPrefix: defaultTagPrefix,
+	separator: defaultSeparator,
 	conditions: map[string]bool{
 		eq: true,
 		ne: true,

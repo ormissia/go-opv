@@ -11,4 +11,7 @@ const (
 	lt = "lt" //<
 	ge = "ge" //>=
 	le = "le" //<=
+
+	defaultTagPrefix = "go-opv"
+	defaultSeparator = ":"
 )
