@@ -113,6 +113,7 @@ func (verifier verifier) Verify(st interface{}, rules ...Rules) (err error) {
 	typ := reflect.TypeOf(st)
 	val := reflect.ValueOf(st)
 
+	fieldName := make(map[string]string)
 	var conditions Rules
 	if len(rules) > 0 {
 		conditions = rules[0]
@@ -124,21 +125,38 @@ func (verifier verifier) Verify(st interface{}, rules ...Rules) (err error) {
 		return errors.New("expect struct")
 	}
 	num := val.NumField()
-	//遍历需要验证对象的所有字段
+	// 遍历需要验证对象的所有字段
 	for i := 0; i < num; i++ {
 		tagVal := typ.Field(i)
 		field := val.Field(i)
+		fieldName[tagVal.Name] = tagVal.Name
 
 		if len(conditions[tagVal.Name]) == 0 {
-			//没有自定义使用tag
-			//`go-opv:"ne:0,eq:10"`
-			//conditionsStr = "ne:0,eq:10"
+			// 当传进来的规则中没有该字段的规则，则去该字段的struct tag中查找
+			// `go-opv:"ne:0,eq:10"`
+			// conditionsStr = "ne:0,eq:10"
 			if conditionsStr, ok := tagVal.Tag.Lookup(verifier.tagPrefix); ok && conditionsStr != "" {
 				conditionStrs := strings.Split(conditionsStr, ",")
+				// 判断第一个是条件还是自定义的字段名
+				if len(conditionStrs) > 0 && len(strings.Split(conditionStrs[0], verifier.separator)) == 1 {
+					fieldName[tagVal.Name] = conditionStrs[0]
+					// 如果第一个字段是字段名的话，将第一个去掉，剩下的作为条件
+					conditionStrs = conditionStrs[1:]
+				}
 				conditions[tagVal.Name] = conditionStrs
 			} else {
-				//如果tag也没有定义则去校验下一个字段
+				// 如果tag也没有定义则去校验下一个字段
 				continue
+			}
+		} else {
+			// 当传进来的自定义规则有该字段的规则，判断第一个是否是字段名
+			conditionStrs := conditions[tagVal.Name]
+			// 判断第一个是条件还是自定义的字段名
+			if len(conditionStrs) > 0 && len(strings.Split(conditionStrs[0], verifier.separator)) == 1 {
+				fieldName[tagVal.Name] = conditionStrs[0]
+				// 如果第一个字段是字段名的话，将第一个去掉，剩下的作为条件
+				conditions[tagVal.Name] = conditionStrs[1:]
+				fmt.Println(conditions[tagVal.Name])
 			}
 		}
 
@@ -146,7 +164,7 @@ func (verifier verifier) Verify(st interface{}, rules ...Rules) (err error) {
 			switch {
 			case verifier.conditions[strings.Split(v, verifier.separator)[0]]:
 				if !compareVerify(field, v, verifier.separator) {
-					return errors.New(fmt.Sprintf("%s length or value is illegal: %s", tagVal.Name, v))
+					return errors.New(fmt.Sprintf("%s length or value is illegal: %s", fieldName[tagVal.Name], v))
 				}
 			default:
 				condition := strings.Split(v, verifier.separator)[0]
